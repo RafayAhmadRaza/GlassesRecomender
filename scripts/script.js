@@ -1,4 +1,9 @@
 
+import { FaceLandmarker,FilesetResolver } from "@mediapipe/tasks-vision";
+
+
+
+
 const uploadButton = document.getElementById("Upload");
 const webcamButton = document.getElementById("webcam");
 const fileOpener = document.getElementById("fileopener");
@@ -11,21 +16,43 @@ let isOnwebcam = false;
 let image;
 let glassesTypes = [];
 let faceTypes = [];
-
+let faceLandmarker;
 
 
 uploadButton.addEventListener("click",uploadImage);
 webcamButton.addEventListener("click",startwebcam);
 
 
+async function loadMODEL() {
+  const MODEL_URL = '/models/face_landmarker.task';
+  const vision = await FilesetResolver.forVisionTasks(// path/to/wasm/root
+  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+);
+faceLandmarker = await FaceLandmarker.createFromOptions(
+vision,
+{
+  baseOptions:{
+    modelAssetPath:MODEL_URL,
+    delegate:"CPU"
+  },
+  outputFaceBlendshapes:false,
+  runningMode:"IMAGE",
+  numFaces: 1
+});
+console.log("Facelandmarker MODEL LOADED");
 
+}
 
 
 function debugPrinter(){
     console.log("Hello Vorld");
 }
 
+function marker(image){
+  const faceLandmarkerResult = faceLandmarker.detect(image);
 
+  console.log(faceLandmarkerResult);
+}
 
 function startwebcam(){
 
@@ -90,13 +117,23 @@ function uploadImage()
         
         
         imageElement.src = objURL;
-        
         imageElement.height = canvas.clientHeight-2;
         
         imageElement.width = canvas.clientWidth-3;
         
+        imageElement.onload = async () => {
+        
         fileOpener.value = null;
+        
+        
+        marker(imageElement);
+      
+      
+      }
+
+
   
   
       }
-      
+
+loadMODEL();
