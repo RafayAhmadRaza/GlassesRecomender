@@ -98,6 +98,7 @@ function startwebcam(){
   imageElement.removeAttribute("src");
   imageElement.height = 0;
   imageElement.width = 0; 
+  document.getElementById("StartBTN").style.display = 'block';
   if (navigator.mediaDevices.getUserMedia && !isOnwebcam) 
     {
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -106,8 +107,11 @@ function startwebcam(){
         videoElement.onloadedmetadata = () => {
           videoElement.play();
           isOnwebcam = true;
+          document.getElementById("StartBTN").addEventListener("click",() => {
 
-          FaceTypeDetector(videoElement);
+            FaceTypeDetector(videoElement);
+          });
+
 
 
 
@@ -126,6 +130,8 @@ function uploadImage()
 
     if(isOnwebcam && videoElement.srcObject){
         videoElement.style.zIndex = 0;
+    document.getElementById("StartBTN").style.display = 'none';
+
            
         let tracks = videoElement.srcObject.getTracks();
 
