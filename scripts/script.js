@@ -17,7 +17,7 @@ let image;
 let glassesTypes = [];
 let faceTypes = [];
 let faceLandmarker;
-
+let landmarks;
 
 uploadButton.addEventListener("click",uploadImage);
 webcamButton.addEventListener("click",startwebcam);
@@ -48,10 +48,49 @@ function debugPrinter(){
     console.log("Hello Vorld");
 }
 
-function marker(image){
-  const faceLandmarkerResult = faceLandmarker.detect(image);
+async function FaceTypeDetector(image){
+  
+  const faceLandmarkerResult = await faceLandmarker.detect(image);
 
-  console.log(faceLandmarkerResult);
+
+  
+  landmarks = faceLandmarkerResult["faceLandmarks"];
+
+  console.log(landmarks);
+  let forehead = landmarks[0][10]; //forehead center
+  let chin = landmarks[0][152]; //chin
+  let Leftcheekbone = landmarks[0][352]; //right cheekbone
+  let Rightcheekbone = landmarks[0][50]; //left cheekbone
+
+
+  let facewidthX = Math.abs(Leftcheekbone.x-Rightcheekbone.x); 
+  let facewidthY = Math.abs(Leftcheekbone.y-Rightcheekbone.y); 
+
+  let faceheightX = Math.abs(forehead.x-chin.x);
+  let faceheightY = Math.abs(forehead.y-chin.y);
+
+
+
+  console.log("Face width X: " + facewidthX);
+  console.log("Face width Y: " +facewidthY);
+  console.log("Face Height X: " +faceheightX);
+  console.log("Face Height Y: " +faceheightY);
+
+
+  let Facewidth = facewidthX+facewidthY;
+  let Faceheight = faceheightX + faceheightY;
+  let aspectRatio = Facewidth/Faceheight;
+
+
+  console.log("Face width: " + Facewidth);
+  console.log("Face Height: " + Faceheight);
+  console.log("Aspect Ratio: " + aspectRatio);
+
+
+
+
+ 
+
 }
 
 function startwebcam(){
@@ -67,6 +106,8 @@ function startwebcam(){
         videoElement.onloadedmetadata = () => {
           videoElement.play();
           isOnwebcam = true;
+
+          FaceTypeDetector(video);
 
 
 
@@ -126,7 +167,7 @@ function uploadImage()
         fileOpener.value = null;
         
         
-        marker(imageElement);
+        FaceTypeDetector(imageElement);
       
       
       }
