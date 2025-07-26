@@ -107,7 +107,7 @@ function startwebcam(){
           videoElement.play();
           isOnwebcam = true;
 
-          FaceTypeDetector(video);
+          FaceTypeDetector(videoElement);
 
 
 
