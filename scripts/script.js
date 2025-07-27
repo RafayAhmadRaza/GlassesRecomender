@@ -9,13 +9,21 @@ const webcamButton = document.getElementById("webcam");
 const fileOpener = document.getElementById("fileopener");
 const imageElement = document.getElementById("imageElement");
 const canvas = document.getElementById("display");
+const averageRatios = {
+  "Heart": 1.31330,
+  "Oblong": 1.20209,
+  "Oval": 0.94252,
+  "Round": 1.41366,
+  "Square": 1.13363
+};
 
 
 let videoElement = document.getElementById("videoElement");
 let isOnwebcam = false;
 let image;
 let glassesTypes = [];
-let faceTypes = [];
+
+
 let faceLandmarker;
 let landmarks;
 
@@ -43,7 +51,23 @@ console.log("Facelandmarker MODEL LOADED");
 
 }
 
+function findClosetShape(inputRatio)
+{
+  let closestShape = null;
 
+  let smallestDiff = Infinity;
+
+  for(const shape in averageRatios){
+    const diff = Math.abs(averageRatios[shape] - inputRatio);
+    if(diff<smallestDiff){
+    smallestDiff = diff;
+    closestShape = shape;
+  }
+  }
+
+  return closestShape;
+
+}
 function debugPrinter(){
     console.log("Hello Vorld");
 }
@@ -57,43 +81,48 @@ async function FaceTypeDetector(image){
   landmarks = faceLandmarkerResult["faceLandmarks"];
 
   console.log(landmarks);
-  let forehead = landmarks[0][10]; //forehead center
-  let chin = landmarks[0][152]; //chin
-  let Leftcheekbone = landmarks[0][352]; //right cheekbone
-  let Rightcheekbone = landmarks[0][50]; //left cheekbone
+
+  const points = landmarks[0]
+
+  let forehead = points[151]; //forehead center
+  let chin = points[152]; //chin
+  let Rightcheekbone = points[234]; //left cheekbone
+  let Leftcheekbone = points[454]; //right cheekbone
 
 
-  let facewidthX = Math.abs(Leftcheekbone.x-Rightcheekbone.x); 
-  let facewidthY = Math.abs(Leftcheekbone.y-Rightcheekbone.y); 
-
-  let faceheightX = Math.abs(forehead.x-chin.x);
-  let faceheightY = Math.abs(forehead.y-chin.y);
-
-
-
-  console.log("Face width X: " + facewidthX);
-  console.log("Face width Y: " +facewidthY);
-  console.log("Face Height X: " +faceheightX);
-  console.log("Face Height Y: " +faceheightY);
+  console.log("Forehead: ",forehead);
+  console.log("Chin: ",chin);
+  console.log("RightCheek: ",Rightcheekbone);
+  console.log("LeftCheek: ",Leftcheekbone);
+  
 
 
-  let Facewidth = facewidthX+facewidthY;
-  let Faceheight = faceheightX + faceheightY;
-  let aspectRatio = Facewidth/Faceheight;
+  const width = distance(Leftcheekbone,Rightcheekbone);
+  console.log("width: " + width);
 
 
-  console.log("Face width: " + Facewidth);
-  console.log("Face Height: " + Faceheight);
+  const height = distance(forehead,chin);
+
+  console.log("height: " + height);
+
+  const aspectRatio = width/height;
+
   console.log("Aspect Ratio: " + aspectRatio);
 
+  let faceType = findClosetShape(aspectRatio);
 
+  
+  console.log("Face Shape: " + faceType);
 
+  document.getElementById("Facetype").innerHTML = faceType;
 
  
 
 }
 
+
 function startwebcam(){
+  document.getElementById("Facetype").innerHTML = "";
 
   imageElement.removeAttribute("src");
   imageElement.height = 0;
@@ -127,6 +156,8 @@ function startwebcam(){
 
 function uploadImage()
 {
+  document.getElementById("Facetype").innerHTML = "";
+  
 
     if(isOnwebcam && videoElement.srcObject){
         videoElement.style.zIndex = 0;
@@ -184,3 +215,9 @@ function uploadImage()
       }
 
 loadMODEL();
+
+function distance(point1, point2){
+  return Math.sqrt(
+    Math.pow(point2.x-point1.x,2) + Math.pow(point2.y-point1.y,2)
+  )
+}
