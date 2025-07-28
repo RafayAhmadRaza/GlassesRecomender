@@ -31,6 +31,8 @@ uploadButton.addEventListener("click",uploadImage);
 webcamButton.addEventListener("click",startwebcam);
 
 
+
+
 async function loadMODEL() {
   const MODEL_URL = '/models/face_landmarker.task';
   const vision = await FilesetResolver.forVisionTasks(// path/to/wasm/root
